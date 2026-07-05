@@ -7,8 +7,8 @@ namespace UniT161E
 {
     public partial class MainForm : Form
     {
-        private SerialPort serialPort;
-        private Thread dataReadThread;
+        private SerialPort? serialPort;
+        private Thread? dataReadThread;
         private volatile bool isRunning = false;
 
         public MainForm()
@@ -114,9 +114,11 @@ namespace UniT161E
             controlPanel.Controls.Add(infoText);
         }
 
-        private void ConnectButton_Click(object sender, EventArgs e)
+        private void ConnectButton_Click(object? sender, EventArgs e)
         {
-            Button btn = (Button)sender;
+            if (sender is not Button btn)
+                return;
+
             if (isRunning)
             {
                 DisconnectDevice();
@@ -133,14 +135,20 @@ namespace UniT161E
         {
             try
             {
-                ComboBox portCombo = (ComboBox)this.Controls[0].Controls["PortCombo"];
-                ComboBox baudCombo = (ComboBox)this.Controls[0].Controls["BaudCombo"];
-                string port = portCombo.SelectedItem?.ToString();
-                int baudRate = (int)baudCombo.SelectedItem;
+                Panel? mainPanel = this.Controls[0] as Panel;
+                if (mainPanel == null)
+                    return;
 
-                if (string.IsNullOrEmpty(port))
+                ComboBox? portCombo = mainPanel.Controls["PortCombo"] as ComboBox;
+                ComboBox? baudCombo = mainPanel.Controls["BaudCombo"] as ComboBox;
+
+                if (portCombo == null || baudCombo == null)
+                    return;
+
+                string? port = portCombo.SelectedItem?.ToString();
+                if (string.IsNullOrEmpty(port) || baudCombo.SelectedItem is not int baudRate)
                 {
-                    MessageBox.Show("Please select a serial port");
+                    MessageBox.Show("Please select a serial port and valid baud rate");
                     return;
                 }
 
@@ -203,9 +211,16 @@ namespace UniT161E
         {
             this.Invoke((MethodInvoker)delegate
             {
-                Label displayLabel = (Label)this.Controls[0].Controls["DisplayLabel"];
-                displayLabel.Text = data;
-                UpdateInfo($"[{DateTime.Now:HH:mm:ss}] {data}");
+                Panel? mainPanel = this.Controls[0] as Panel;
+                if (mainPanel == null)
+                    return;
+
+                Label? displayLabel = mainPanel.Controls["DisplayLabel"] as Label;
+                if (displayLabel != null)
+                {
+                    displayLabel.Text = data;
+                    UpdateInfo($"[{DateTime.Now:HH:mm:ss}] {data}");
+                }
             });
         }
 
@@ -213,8 +228,15 @@ namespace UniT161E
         {
             this.Invoke((MethodInvoker)delegate
             {
-                Label statusLabel = (Label)this.Controls[0].Controls["StatusLabel"];
-                statusLabel.Text = status;
+                Panel? mainPanel = this.Controls[0] as Panel;
+                if (mainPanel == null)
+                    return;
+
+                Label? statusLabel = mainPanel.Controls["StatusLabel"] as Label;
+                if (statusLabel != null)
+                {
+                    statusLabel.Text = status;
+                }
             });
         }
 
@@ -222,9 +244,16 @@ namespace UniT161E
         {
             this.Invoke((MethodInvoker)delegate
             {
-                TextBox infoText = (TextBox)this.Controls[0].Controls["InfoText"];
-                infoText.AppendText(info + Environment.NewLine);
-                infoText.ScrollToCaret();
+                Panel? mainPanel = this.Controls[0] as Panel;
+                if (mainPanel == null)
+                    return;
+
+                TextBox? infoText = mainPanel.Controls["InfoText"] as TextBox;
+                if (infoText != null)
+                {
+                    infoText.AppendText(info + Environment.NewLine);
+                    infoText.ScrollToCaret();
+                }
             });
         }
     }
